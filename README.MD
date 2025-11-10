@@ -55,7 +55,8 @@ Query health data interactively, view retrieved context, and get AI-generated re
 │ (LangChain + Gemini LLM)     │
 └──────────────────────────────┘
 
-⚙️ Installation & Setup
+
+## ⚙️ Installation & Setup
     1️⃣ Clone Repository
     git clone https://github.com/anujpatel-ai/CareQuery.git
     cd CareQuery
