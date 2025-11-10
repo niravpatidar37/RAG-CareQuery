@@ -1,9 +1,9 @@
-🩺 CareQuery — AI-Powered Healthcare Assistant (RAG + Gemini + AWS S3)
+## 🩺 CareQuery — AI-Powered Healthcare Assistant (RAG + Gemini + AWS S3)
 
 CareQuery is an end-to-end Generative AI project that helps users query healthcare-related data using a Retrieval-Augmented Generation (RAG) pipeline.
 It combines AWS S3 for data storage, LangChain for document handling, ChromaDB for vector storage, and Google Gemini (via API) for intelligent response generation.
 
-🚀 Key Features
+## 🚀 Key Features
 
 Automated Data Ingestion from AWS S3
 Loads structured health data (e.g., symptom–disease mappings) directly from an S3 bucket and processes it dynamically.
@@ -58,34 +58,36 @@ Query health data interactively, view retrieved context, and get AI-generated re
 
 
 ## ⚙️ Installation & Setup
-```
-    1️⃣ Clone Repository
+
+  ###  1️⃣ Clone Repository
+```bash
     git clone https://github.com/anujpatel-ai/CareQuery.git
     cd CareQuery
+```
 
-    2️⃣ Create Virtual Environment
-
+  ###  2️⃣ Create Virtual Environment
+```bash
     python -m venv rag_pipeline
     source rag_pipeline/bin/activate  # (Linux/Mac)
     rag_pipeline\Scripts\activate     # (Windows)
-
-    3️⃣ Install Requirements
-
+```
+   ### 3️⃣ Install Requirements
+```bash
     pip install -r requirements.txt
-
-    4️⃣ Add Environment Variables
+```
+   ### 4️⃣ Add Environment Variables
         Create a .env file in the project root:
-
+```ini
         GOOGLE_API_KEY = "your_google_api_key"
         AWS_ACCESS_KEY_ID = "your_access_key"
         AWS_SECRET_ACCESS_KEY = "your_secret_key"
-        AWS_REGION = "us-east-1"
+        AWS_REGION = "your_region_name"
         S3_BUCKET_NAME = "carequery"
         S3_DOWNLOADED_FILES = "s3_data/"
 ```
 
 ## 🧩 Project Structure
-```
+```bash
 📦 CareQuery
 ├── src/
 │   ├── data_ingested.py       # Data ingestion from AWS S3
@@ -119,16 +121,15 @@ Query Execution
 On user query, the relevant context is retrieved from ChromaDB and passed to Gemini for response generation.
 
 ## 💻 Run the Streamlit App
-```
+```bash
 streamlit run src/app.py
 ```
 
 
 ## 👨‍💻 Author
 
-```
+```text
 Anuj Patel
 🧩 Applied AI Engineer | Building intelligent retrieval systems
-🔗 LinkedIn
- • GitHub
+🔗 LinkedIn - https://www.linkedin.com/in/anuj020/
 ```
