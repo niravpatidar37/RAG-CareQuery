@@ -3,6 +3,9 @@
 CareQuery is an end-to-end Generative AI project that helps users query healthcare-related data using a Retrieval-Augmented Generation (RAG) pipeline.
 It combines AWS S3 for data storage, LangChain for document handling, ChromaDB for vector storage, and Google Gemini (via API) for intelligent response generation.
 
+🎯 **Try it Online:** [Hugging Face Space](https://huggingface.co/spaces/Anuj020/CareQuery)
+
+
 ## 🚀 Key Features
 
 Automated Data Ingestion from AWS S3
