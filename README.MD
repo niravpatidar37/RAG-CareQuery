@@ -23,61 +23,65 @@ Works seamlessly across environments — local, Hugging Face Spaces, or cloud se
 Interactive Interface (Streamlit)
 Query health data interactively, view retrieved context, and get AI-generated responses in real-time.
 
-🧠 Project Architecture
-            ┌──────────────────────────────┐
-            │        AWS S3 (Data)         │
-            │  (CSV symptom & condition)   │
-            └────────────┬─────────────────┘
-                         │
-                         ▼
-           ┌──────────────────────────────┐
-           │  Data Ingestion Layer         │
-           │  (boto3 + LangChain CSVLoader)│
-           └────────────┬─────────────────┘
-                         │
-                         ▼
-           ┌──────────────────────────────┐
-           │   Embedding Layer             │
-           │  (Google Gemini Embeddings)   │
-           └────────────┬─────────────────┘
-                         │
-                         ▼
-           ┌──────────────────────────────┐
-           │   Vector Store (ChromaDB)    │
-           │ Persistent Storage: data/     │
-           └────────────┬─────────────────┘
-                         │
-                         ▼
-           ┌──────────────────────────────┐
-           │   Retrieval + Generation      │
-           │  (LangChain + Gemini LLM)     │
-           └──────────────────────────────┘
+## 🧠 Project Architecture
+
+```text
+┌──────────────────────────────┐
+│ AWS S3 (Data)                │
+│ (CSV: symptoms & conditions) │
+└────────────┬─────────────────┘
+             │
+             ▼
+┌──────────────────────────────┐
+│ Data Ingestion Layer         │
+│ (boto3 + LangChain CSVLoader)│
+└────────────┬─────────────────┘
+             │
+             ▼
+┌──────────────────────────────┐
+│ Embedding Layer              │
+│ (Google Gemini Embeddings)   │
+└────────────┬─────────────────┘
+             │
+             ▼
+┌──────────────────────────────┐
+│ Vector Store (ChromaDB)      │
+│ Persistent Storage: data/    │
+└────────────┬─────────────────┘
+             │
+             ▼
+┌──────────────────────────────┐
+│ Retrieval + Generation       │
+│ (LangChain + Gemini LLM)     │
+└──────────────────────────────┘
 
 ⚙️ Installation & Setup
-1️⃣ Clone Repository
-git clone https://github.com/anujpatel-ai/CareQuery.git
-cd CareQuery
+    1️⃣ Clone Repository
+    git clone https://github.com/anujpatel-ai/CareQuery.git
+    cd CareQuery
 
-2️⃣ Create Virtual Environment
-python -m venv rag_pipeline
-source rag_pipeline/bin/activate  # (Linux/Mac)
-rag_pipeline\Scripts\activate     # (Windows)
+    2️⃣ Create Virtual Environment
 
-3️⃣ Install Requirements
-pip install -r requirements.txt
+    python -m venv rag_pipeline
+    source rag_pipeline/bin/activate  # (Linux/Mac)
+    rag_pipeline\Scripts\activate     # (Windows)
 
-4️⃣ Add Environment Variables
+    3️⃣ Install Requirements
 
-Create a .env file in the project root:
+    pip install -r requirements.txt
 
-GOOGLE_API_KEY = "your_google_api_key"
-AWS_ACCESS_KEY_ID = "your_access_key"
-AWS_SECRET_ACCESS_KEY = "your_secret_key"
-AWS_REGION = "us-east-1"
-S3_BUCKET_NAME = "carequery"
-S3_DOWNLOADED_FILES = "s3_data/"
+    4️⃣ Add Environment Variables
+        Create a .env file in the project root:
+
+        GOOGLE_API_KEY = "your_google_api_key"
+        AWS_ACCESS_KEY_ID = "your_access_key"
+        AWS_SECRET_ACCESS_KEY = "your_secret_key"
+        AWS_REGION = "us-east-1"
+        S3_BUCKET_NAME = "carequery"
+        S3_DOWNLOADED_FILES = "s3_data/"
 
 🧩 Project Structure
+
 📦 CareQuery
 ├── src/
 │   ├── data_ingested.py       # Data ingestion from AWS S3
@@ -111,3 +115,5 @@ On user query, the relevant context is retrieved from ChromaDB and passed to Gem
 
 💻 Run the Streamlit App
 streamlit run src/app.py
+
+
