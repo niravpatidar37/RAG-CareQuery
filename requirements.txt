@@ -1,0 +1,14 @@
+streamlit
+google-generativeai
+python-dotenv
+langchain
+langchain_google_genai
+PyPDF2
+langchain-community
+pymupdf
+sentence-transformers
+faiss-cpu
+chromadb
+langchain-groq
+typesense
+boto3
