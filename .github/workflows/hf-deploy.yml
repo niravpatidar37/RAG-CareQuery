@@ -21,16 +21,18 @@ jobs:
     - name: Install Hugging Face Hub
       run: pip install huggingface_hub
 
-    - name: Login & Upload to Hugging Face Space
+    - name: Upload to Hugging Face Space (Python API)
       env:
         HF_TOKEN: ${{ secrets.HF_TOKEN }}
       run: |
-        python - <<EOF
-        from huggingface_hub import login
-        login("${{ secrets.HF_TOKEN }}")
-        EOF
+        python - << 'EOF'
+        from huggingface_hub import HfApi
 
-        huggingface-cli upload . \
-          --repo Anuj020/CareQuery \
-          --repo-type space \
-          --commit-message "Auto-deploy from GitHub"
+        api = HfApi()
+        api.upload_folder(
+            folder_path=".",                      # upload entire repo
+            repo_id="Anuj020/CareQuery",         # <username>/<space>
+            repo_type="space",                   # must be "space"
+            commit_message="Auto-deploy from GitHub"
+        )
+        EOF
