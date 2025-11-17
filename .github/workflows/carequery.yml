@@ -1,0 +1,32 @@
+name: Deploy to Hugging Face Space
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+
+    - name: Install Hugging Face CLI
+      run: pip install huggingface_hub
+
+    - name: Upload to Hugging Face Space
+      env:
+        HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      run: |
+        huggingface-cli login --token $HF_TOKEN
+        huggingface-cli upload . \
+        --repo <your-username>/<space-name> \
+        --repo-type space \
+        --commit-message "Auto-deploy from GitHub"
