@@ -18,15 +18,19 @@ jobs:
       with:
         python-version: "3.10"
 
-    - name: Install Hugging Face CLI
+    - name: Install Hugging Face Hub
       run: pip install huggingface_hub
 
-    - name: Upload to Hugging Face Space
+    - name: Login & Upload to Hugging Face Space
       env:
         HF_TOKEN: ${{ secrets.HF_TOKEN }}
       run: |
-        huggingface-cli login --token $HF_TOKEN
+        python - <<EOF
+        from huggingface_hub import login
+        login("${{ secrets.HF_TOKEN }}")
+        EOF
+
         huggingface-cli upload . \
-        --repo Anuj020/CareQuery \
-        --repo-type space \
-        --commit-message "Auto-deploy from GitHub"
+          --repo Anuj020/CareQuery \
+          --repo-type space \
+          --commit-message "Auto-deploy from GitHub"
