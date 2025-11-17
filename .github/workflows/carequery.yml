@@ -27,6 +27,6 @@ jobs:
       run: |
         huggingface-cli login --token $HF_TOKEN
         huggingface-cli upload . \
-        --repo <your-username>/<space-name> \
+        --repo Anuj020/CareQuery \
         --repo-type space \
         --commit-message "Auto-deploy from GitHub"
