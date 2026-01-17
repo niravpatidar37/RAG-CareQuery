@@ -1,62 +1,109 @@
-### Simple RAG pipeline with groq LLM
-from data_ingested import data_ingestion,split_documents
+from data_ingested import data_ingestion, split_documents
 from vectors import VectorStore
 from embedding import EmbeddingManager
+from rag_retriever import RAGRetriever
+from langchain_google_genai import ChatGoogleGenerativeAI
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
 
-
-def rag(query,retriever,llm,top_k=5,min_score=0.2,return_context=False):
+def ingest_knowledge_base():
     """
-        RAG pipeline with extra features:
-        -   Returns answer, sources, confidence score, and optionally full context.
+    Trigger the full ingestion pipeline:
+    S3 Download -> Semantic Chunking -> Embedding -> Vector Store Upsert
     """
-    results = retriever.retrieve(query,top_k=top_k,score_threshold= min_score)
-    if not results:
-        return {'answer': 'No relevant context found.','sources':[],'confidence':0.0,'context':''}
-
-    # Prepare context and sources
-    context = "\n\n".join([doc['content'] for doc in results])
-    sources = [{
-        'sources': doc['metadata'].get('source_file',doc['metadata'].get('source','unknown')),
-        'page': doc['metadata'].get('page','unknow'),
-        'score': doc['similarity_score'],
-        'preview': doc['content'][:300] + '...'
-    } for doc in results]
-
-    confidence = max([doc['similarity_score'] for doc in results])
-
-    # generater answer
-    prompt = f"""Use the following context to answer the question concisely.\nContext:\n{context}\n\nQuestion:{query}\n\nAnswer:"""
-    response = llm.invoke([prompt.format(context=context,query=query)])
-
-    output = {
-        'answer': response.content,
-        'sources':sources,
-        'confidence':confidence
-    }
-    if return_context:
-        output['context'] = context
-    return output
-
-
-def run_ingestion():
-    print("Starting data ingestion...")
-
-    # 1️⃣ Load all documents from folder
+    print("Starting data ingestion pipeline...")
+    
+    # 1. Load documents
     documents = data_ingestion()
+    if not documents:
+        print("No documents found to ingest.")
+        return None, None
 
-    # 2️⃣ Split documents into chunks for better RAG context
+    # 2. Split (Semantic Chunking)
     chunks = split_documents(documents)
 
-    # 3️⃣ Convert chunks to embeddings
+    # 3. Embedding Manager
     embedding_manager = EmbeddingManager()
     texts = [doc.page_content for doc in chunks]
+    
+    # Generate embeddings (batching handled by LangChain/Gemini client usually, 
+    # but we pass straight to vector store in some designs. 
+    # Here we generate explicitly to pass to VectorStore wrapper)
     embeddings = embedding_manager.generate_embedding(texts)
 
-    # 4️⃣ Store in vector database
+    # 4. Store
     vectorstore = VectorStore()
     vectorstore.add_documents(chunks, embeddings)
+    
+    # 5. Invalidate BM25 cache to force rebuild on next retrieval
+    cache_path = "cache/bm25_index.pkl"
+    if os.path.exists(cache_path):
+        os.remove(cache_path)
+        print("BM25 cache invalidated.")
 
-    print("✅ Data successfully embedded and stored in Vector DB!")
-    return vectorstore,embedding_manager
+    print("✅ Knowledge Base updated successfully!")
+    return vectorstore, embedding_manager
 
+def get_rag_chain():
+    """
+    Initialize the RAG components for RETRIEVAL only.
+    Does NOT search or ingest.
+    """
+    print("Initializing RAG Chain...")
+    embedding_manager = EmbeddingManager()
+    vectorstore = VectorStore() # Connects to existing persistence
+    
+    # Retriever (Hybrid)
+    retriever = RAGRetriever(vectorstore, embedding_manager)
+    
+    # LLM
+    llm = ChatGoogleGenerativeAI(
+        model="gemini-2.0-flash-exp", # Using latest available or flash
+        temperature=0.3, # Lower temp for more factual answers
+        api_key=os.getenv("GOOGLE_API_KEY")
+    )
+    
+    return retriever, llm
+
+def rag(query, retriever, llm, top_k=5, min_score=0.0):
+    """
+    Execute RAG search and generation
+    """
+    # 1. Retrieve
+    results = retriever.retrieve(query, top_k=top_k, score_threshold=min_score)
+    
+    if not results:
+        return {
+            'answer': "I couldn't find any relevant information in the knowledge base.",
+            'sources': [],
+            'confidence': 0.0,
+            'context': ''
+        }
+
+    # 2. Context Construction
+    context = "\n\n".join([f"Source: {doc['metadata'].get('source', 'Unknown')}\nContent: {doc['content']}" for doc in results])
+    
+    # 3. Generation
+    prompt = f"""You are an expert healthcare assistant. Use the following context to answer the user's question accurately.
+If the answer is not in the context, say so. Do not hallucinate.
+
+Context:
+{context}
+
+Question: {query}
+
+Answer:"""
+    
+    response = llm.invoke(prompt)
+    
+    # Calculate confidence proxy (avg score of top result)
+    confidence = results[0]['similarity_score'] if results else 0.0
+
+    return {
+        'answer': response.content,
+        'sources': results, # Return full result objects
+        'confidence': confidence,
+        'context': context
+    }

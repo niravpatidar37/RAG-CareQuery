@@ -1,51 +1,53 @@
-import numpy as np
-from sentence_transformers import SentenceTransformer
-import chromadb
-from chromadb.config import Settings
-import uuid
-from typing import List, Dict, Any, Tuple
-from sklearn.metrics.pairwise import cosine_similarity
 import os
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from dotenv import load_dotenv
 
+load_dotenv()
 
 class EmbeddingManager:
-    """Handles document embedding generation using sentenceTransformer"""
-    def __init__(self,model_name:str = "all-MiniLM-L6-v2"):
+    """Handles document embedding generation using Google Gemini Embeddings"""
+    def __init__(self, model_name: str = "models/text-embedding-004"):
         """
         Initialize the embedding manager
         
-        Args: model_name: Huggingface model name for sentence embeddings
+        Args: model_name: Gemini model name for embeddings
         """
         self.model_name = model_name
         self.model = None
         self._load_model()
     
     def _load_model(self):
-        """Load the sentenceTransformer model"""
+        """Load the Google Gemini Embedding model"""
         try:
-            print(f"loading Embedding Model:{self.model_name}")
-            self.model = SentenceTransformer(self.model_name)
-            print(f"Model loaded Successfully. Embedding dimension: {self.model.get_sentence_embedding_dimension()}")
+            print(f"Loading Embedding Model: {self.model_name}")
+            api_key = os.getenv("GOOGLE_API_KEY")
+            if not api_key:
+                raise ValueError("GOOGLE_API_KEY not found in environment variables")
+                
+            self.model = GoogleGenerativeAIEmbeddings(
+                model=self.model_name,
+                google_api_key=api_key
+            )
+            print("Model loaded Successfully.")
         except Exception as e:
-            print(f"error loading model{self.model_name}: {e}")
+            print(f"Error loading model {self.model_name}: {e}")
+            raise
 
-    def generate_embedding(self,texts: List[str]) -> np.ndarray:
+    def generate_embedding(self, texts: list[str]) -> list[list[float]]:
         """
         Generate embeddings for a list of texts
         Args:
             texts: List of text strings to embed
         
-        returns:
-            Numpy array of embeddings with shape(len(texts),embedding_dim)
+        Returns:
+            List of embeddings (list of floats)
         """
 
         if not self.model:
             raise ValueError("Model not loaded")
+        
         print(f"Generating embedding for {len(texts)} texts...")
-        embedding = self.model.encode(texts,show_progress_bar=True)
-        print(f"Generated embeddings with shape:{embedding.shape}")
-        return embedding
-
-# Initialize the embedding Manager
-# embedding_manager = EmbeddingManager()
-# embedding_manager
+        # invoke handles batching internally usually, or we can use embed_documents
+        embeddings = self.model.embed_documents(texts)
+        print(f"Generated {len(embeddings)} embeddings")
+        return embeddings
