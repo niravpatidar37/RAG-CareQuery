@@ -1,6 +1,6 @@
 # 🩺 CareQuery: Next-Gen AI Healthcare Assistant
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_svg)](https://huggingface.co/spaces/Anuj020/CareQuery)
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://huggingface.co/spaces/Anuj020/CareQuery)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![Gemini](https://img.shields.io/badge/Google-Gemini-orange.svg)](https://ai.google.dev/)
 [![LangChain](https://img.shields.io/badge/Framework-LangChain-green.svg)](https://www.langchain.com/)
