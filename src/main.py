@@ -60,9 +60,10 @@ def get_rag_chain():
     
     # LLM
     llm = ChatGoogleGenerativeAI(
-        model="gemini-2.0-flash-exp", # Using latest available or flash
-        temperature=0.3, # Lower temp for more factual answers
-        api_key=os.getenv("GOOGLE_API_KEY")
+        model="gemini-2.5-flash", 
+        temperature=0.3, 
+        max_retries=3,
+        google_api_key=os.getenv("GOOGLE_API_KEY")
     )
     
     return retriever, llm
@@ -86,13 +87,19 @@ def rag(query, retriever, llm, top_k=5, min_score=0.0):
     context = "\n\n".join([f"Source: {doc['metadata'].get('source', 'Unknown')}\nContent: {doc['content']}" for doc in results])
     
     # 3. Generation
-    prompt = f"""You are an expert healthcare assistant. Use the following context to answer the user's question accurately.
-If the answer is not in the context, say so. Do not hallucinate.
+    prompt = f"""You are a senior healthcare assistant with expertise in medical diagnostics. 
 
-Context:
+### INSTRUCTIONS:
+1. **Analyze the Context**: Use ONLY the clinical information provided below.
+2. **Handle Uncertainty**: If the context doesn't contain the answer, state that you don't have enough data.
+3. **Structure**: Use bullet points for symptoms or lists for readability.
+4. **Grounding**: Start with "Based on the provided medical context..."
+
+### CLINICAL CONTEXT:
 {context}
 
-Question: {query}
+### USER QUESTION: 
+{query}
 
 Answer:"""
     

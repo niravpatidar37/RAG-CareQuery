@@ -9,21 +9,31 @@ load_dotenv()
 
 def data_ingestion_from_s3():
     """Downloads CSV files from S3 to local directory"""
+    access_key = os.getenv("AWS_ACCESS_KEY_ID")
+    secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+    region = os.getenv("AWS_REGION")
+    bucket_name = os.getenv("S3_BUCKET_NAME")
+
+    if not all([access_key, secret_key, region, bucket_name]):
+        print("❌ Error: Missing AWS credentials or S3_BUCKET_NAME in environment.")
+        return os.getenv("S3_DOWNLOADED_FILES", "s3_data/")
+
     s3 = boto3.client(
         's3',
-        aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
-        aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
-        region_name=os.getenv("AWS_REGION")
-    )
+        aws_access_key_id=access_key,
+        aws_secret_access_key=secret_key,
+        region_name=region
+    ) 
 
-    bucket_name = os.getenv("S3_BUCKET_NAME")
-    prefix = "carequery/" # Adjust prefix if needed, or empty string
+    if not bucket_name:
+        print("❌ Error: S3_BUCKET_NAME is not set in your .env file.")
+        return os.getenv("S3_DOWNLOADED_FILES", "s3_data/")
 
     # Handle case where bucket might be empty or connection fails
     try:
         response = s3.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
     except Exception as e:
-        print(f"Error listing S3 objects: {e}")
+        print(f"❌ Error listing S3 objects: {e}")
         return os.getenv("S3_DOWNLOADED_FILES", "s3_data/")
 
     local_files = os.getenv("S3_DOWNLOADED_FILES", "s3_data/")
@@ -48,19 +58,51 @@ def data_ingestion_from_s3():
     return local_files
 
 def data_ingestion():
-    """Loads documents from local directory"""
-    csv_files_dir = data_ingestion_from_s3()
+    """Loads documents from S3 cache or local data directory"""
+    # 1. Attempt S3 sync (downlods to s3_data/)
+    s3_files_dir = data_ingestion_from_s3()
+    
+    # 2. Define list of possible data sources
+    search_paths = [s3_files_dir, "data/"]
+    
+    documents = []
+    for path in search_paths:
+        if not os.path.exists(path):
+            continue
+            
+        print(f"Searching for data in: {path}...")
+        
+        # Try Loading with utf-8-sig first (handles BOM and most standard exports)
+        try:
+            dir_loader = DirectoryLoader(
+                path,
+                glob="**/*.csv",
+                loader_cls=CSVLoader,
+                loader_kwargs={'encoding': 'utf-8-sig'},
+                show_progress=True
+            )
+            loaded_docs = dir_loader.load()
+            print(f"Loaded {len(loaded_docs)} documents from {path}")
+            documents.extend(loaded_docs)
+        except Exception as e:
+            if "charmap" in str(e) or "utf-8" in str(e):
+                print(f"Notice: UTF-8 failed for {path}, trying latin1...")
+                dir_loader = DirectoryLoader(
+                    path,
+                    glob="**/*.csv",
+                    loader_cls=CSVLoader,
+                    loader_kwargs={'encoding': 'latin1'},
+                    show_progress=True
+                )
+                loaded_docs = dir_loader.load()
+                print(f"Loaded {len(loaded_docs)} documents from {path} (latin1)")
+                documents.extend(loaded_docs)
+            else:
+                print(f"Error loading from {path}: {e}")
 
-    dir_loader = DirectoryLoader(
-        csv_files_dir,
-        glob="**/*.csv",
-        loader_cls=CSVLoader,
-        loader_kwargs={'encoding': 'utf-8'},
-        show_progress=True
-    )
-
-    documents = dir_loader.load()
-    print(f"Loaded {len(documents)} documents from {csv_files_dir}")
+    if not documents:
+        print("⚠️ Warning: No CSV documents found in any of the search paths.")
+        
     return documents
 
 def split_documents(documents):

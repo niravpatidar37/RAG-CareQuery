@@ -45,6 +45,9 @@ class VectorStore:
         ids = []
         metadatas = []
         document_text = []
+        final_embeddings = []
+        
+        seen_ids = set()
         
         # We need embeddings as list of lists, usually they come that way from new Manager
         # If they are numpy array, convert them.
@@ -56,6 +59,11 @@ class VectorStore:
         for i, (doc, emb) in enumerate(zip(documents, embedding_list)):
             # Create deterministic ID based on content
             content_hash = hashlib.md5(doc.page_content.encode('utf-8')).hexdigest()
+            
+            if content_hash in seen_ids:
+                continue
+            
+            seen_ids.add(content_hash)
             ids.append(content_hash)
 
             # Prepare Metadata
@@ -69,16 +77,21 @@ class VectorStore:
             metadatas.append(metadata)
 
             document_text.append(doc.page_content)
+            final_embeddings.append(emb)
+
+        if not ids:
+            print("No new unique documents to add.")
+            return
 
         try:
             # upsert handles updates or inserts
             self.collection.upsert(
                 ids=ids,
-                embeddings=embedding_list,
+                embeddings=final_embeddings,
                 documents=document_text,
                 metadatas=metadatas
             )
-            print(f"Successfully added/updated {len(documents)} documents in vector store")
+            print(f"Successfully added/updated {len(ids)} unique documents in vector store")
             print(f"Total documents in collection: {self.collection.count()}")
         except Exception as e:
             print(f"Error adding documents to vector store: {e}")

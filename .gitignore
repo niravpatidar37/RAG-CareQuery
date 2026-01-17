@@ -1,2 +1,26 @@
+# Environment
 .env
-rag_pipeline
+.venv/
+env/
+venv/
+
+# Python caching
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Project Specific (Large/Binary Data)
+vector_store/
+cache/
+s3_data/
+verification_log.txt
+diag_output.txt
+model_list.txt
+
+# OS Specific
+.DS_Store
+Thumbs.db
+
+# Notebook-specific storage
+notebook/s3_data/
+notebook/vector_store/

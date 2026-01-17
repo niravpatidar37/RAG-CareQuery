@@ -1,14 +1,16 @@
-streamlit
-google-generativeai
-python-dotenv
-langchain
-langchain_google_genai
-PyPDF2
+boto3
+rank_bm25
+langchain_experimental
+langchain-google-genai
 langchain-community
-pymupdf
-sentence-transformers
-faiss-cpu
+langchain
 chromadb
+streamlit
+python-dotenv
+sentence-transformers
+# Keeping original requirements just in case
+PyPDF2
+pymupdf
+faiss-cpu
 langchain-groq
 typesense
-boto3
