@@ -54,7 +54,7 @@ graph TD
 ### 1. Environment Setup
 ```bash
 # Clone and enter
-git clone https://github.com/anujpatel-ai/CareQuery.git
+git clone https://github.com/Anuj020/RAG-CareQuery.git
 cd CareQuery
 
 # Setup environment
