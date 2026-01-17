@@ -95,8 +95,9 @@ Contributions are welcome! If you're an AI engineer or medical professional, fee
 🔗 [LinkedIn](https://www.linkedin.com/in/anuj020/) | 🧠 [Hugging Face](https://huggingface.co/Anuj020)
 
 ## 🤝 Contributors
-- **Nirav Patel** (AI/LLM Engineer) [LinkedIn](https://www.linkedin.com/in/nirav-patel-39a26a151/)
-  *AI/LLM Engineer | Production LLMs, RAG & Agentic AI | Python · LangChain · Vertex AI/AWS*
+- **Nirav Patel** (AI/LLM Engineer) 
+🔗 [LinkedIn](https://www.linkedin.com/in/nirav-patel-39a26a151/)
+
   - Implemented High-Performance Parallel Search
   - Integrated Semantic Chunking & Vertex Search optimizations
   - Enhanced UI with Streaming & Caching
